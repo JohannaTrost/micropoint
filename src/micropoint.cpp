@@ -1711,14 +1711,15 @@ DataFrame BelowCanopy(double reqhgt, double zref, double lat, double lon, DataFr
     std::vector<double> wc = CanopyWindCpp(vegp[0], paii);
     // Calculate whichz
     std::vector<double> z(paii.size());
-    double mindif = vegp[0];
+    double veg_height = vegp[0];
+    double mindif = vegp[0]; // start with max possible diff
     int whichz = 0;
-    double nn = paii.size();
+    double nn = static_cast<double>(paii.size());
     for (size_t i = 0; i < paii.size(); ++i) {
-        z[i] = ((i + 1) / nn) * vegp[0];
-        double newdif = abs(z[i] - reqhgt);
+        z[i] = (static_cast<double>(i + 1) / nn) * veg_height;
+        double newdif = std::abs(z[i] - reqhgt);
         if (newdif < mindif) {
-            whichz = i;
+            whichz = static_cast<int>(i);
             mindif = newdif;
         }
     }
