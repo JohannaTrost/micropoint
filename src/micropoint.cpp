@@ -2100,7 +2100,7 @@ Rcpp::DataFrame runmodel(double reqhgt, double zref, double lat, double lon, Dat
 // ------------------------------------------------------------------------------------------------------
 // Run below canopy model for all time steps and heights;
 // [[Rcpp::export]]
-Rcpp::List BelowCanopyFullProfile(
+Rcpp::List BelowCanopyProfile(
     double zref,
     double lat,
     double lon,

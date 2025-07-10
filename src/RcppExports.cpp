@@ -407,9 +407,9 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// BelowCanopyFullProfile
-Rcpp::List BelowCanopyFullProfile(double zref, double lat, double lon, DataFrame obstime, DataFrame climdata, DataFrame bigleafvars, int iters, const std::vector<double>& vegp, const std::vector<double>& paii, const std::vector<double>& groundp, double a0, double a1, double bwgt);
-RcppExport SEXP _micropoint_BelowCanopyFullProfile(SEXP zrefSEXP, SEXP latSEXP, SEXP lonSEXP, SEXP obstimeSEXP, SEXP climdataSEXP, SEXP bigleafvarsSEXP, SEXP itersSEXP, SEXP vegpSEXP, SEXP paiiSEXP, SEXP groundpSEXP, SEXP a0SEXP, SEXP a1SEXP, SEXP bwgtSEXP) {
+// BelowCanopyProfile
+Rcpp::List BelowCanopyProfile(double zref, double lat, double lon, DataFrame obstime, DataFrame climdata, DataFrame bigleafvars, int iters, const std::vector<double>& vegp, const std::vector<double>& paii, const std::vector<double>& groundp, double a0, double a1, double bwgt);
+RcppExport SEXP _micropoint_BelowCanopyProfile(SEXP zrefSEXP, SEXP latSEXP, SEXP lonSEXP, SEXP obstimeSEXP, SEXP climdataSEXP, SEXP bigleafvarsSEXP, SEXP itersSEXP, SEXP vegpSEXP, SEXP paiiSEXP, SEXP groundpSEXP, SEXP a0SEXP, SEXP a1SEXP, SEXP bwgtSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -426,7 +426,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type a0(a0SEXP);
     Rcpp::traits::input_parameter< double >::type a1(a1SEXP);
     Rcpp::traits::input_parameter< double >::type bwgt(bwgtSEXP);
-    rcpp_result_gen = Rcpp::wrap(BelowCanopyFullProfile(zref, lat, lon, obstime, climdata, bigleafvars, iters, vegp, paii, groundp, a0, a1, bwgt));
+    rcpp_result_gen = Rcpp::wrap(BelowCanopyProfile(zref, lat, lon, obstime, climdata, bigleafvars, iters, vegp, paii, groundp, a0, a1, bwgt));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -501,7 +501,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_micropoint_Belowground", (DL_FUNC) &_micropoint_Belowground, 3},
     {"_micropoint_Atground", (DL_FUNC) &_micropoint_Atground, 7},
     {"_micropoint_runmodel", (DL_FUNC) &_micropoint_runmodel, 14},
-    {"_micropoint_BelowCanopyFullProfile", (DL_FUNC) &_micropoint_BelowCanopyFullProfile, 13},
+    {"_micropoint_BelowCanopyProfile", (DL_FUNC) &_micropoint_BelowCanopyProfile, 13},
     {NULL, NULL, 0}
 };
 
