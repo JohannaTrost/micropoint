@@ -382,6 +382,24 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// AboveCanopyProfile
+Rcpp::List AboveCanopyProfile(const std::vector<double>& zregs, double zref, double lat, double lon, DataFrame obstime, DataFrame climdata, DataFrame bigleafvars, const std::vector<double>& vegp);
+RcppExport SEXP _micropoint_AboveCanopyProfile(SEXP zregsSEXP, SEXP zrefSEXP, SEXP latSEXP, SEXP lonSEXP, SEXP obstimeSEXP, SEXP climdataSEXP, SEXP bigleafvarsSEXP, SEXP vegpSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const std::vector<double>& >::type zregs(zregsSEXP);
+    Rcpp::traits::input_parameter< double >::type zref(zrefSEXP);
+    Rcpp::traits::input_parameter< double >::type lat(latSEXP);
+    Rcpp::traits::input_parameter< double >::type lon(lonSEXP);
+    Rcpp::traits::input_parameter< DataFrame >::type obstime(obstimeSEXP);
+    Rcpp::traits::input_parameter< DataFrame >::type climdata(climdataSEXP);
+    Rcpp::traits::input_parameter< DataFrame >::type bigleafvars(bigleafvarsSEXP);
+    Rcpp::traits::input_parameter< const std::vector<double>& >::type vegp(vegpSEXP);
+    rcpp_result_gen = Rcpp::wrap(AboveCanopyProfile(zregs, zref, lat, lon, obstime, climdata, bigleafvars, vegp));
+    return rcpp_result_gen;
+END_RCPP
+}
 // manCpp
 std::vector<double> manCpp(std::vector<double> x, int n);
 RcppExport SEXP _micropoint_manCpp(SEXP xSEXP, SEXP nSEXP) {
@@ -502,6 +520,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_micropoint_Atground", (DL_FUNC) &_micropoint_Atground, 7},
     {"_micropoint_runmodel", (DL_FUNC) &_micropoint_runmodel, 14},
     {"_micropoint_BelowCanopyProfile", (DL_FUNC) &_micropoint_BelowCanopyProfile, 13},
+    {"_micropoint_AboveCanopyProfile", (DL_FUNC) &_micropoint_AboveCanopyProfile, 8},
     {NULL, NULL, 0}
 };
 

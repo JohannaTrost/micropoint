@@ -2303,3 +2303,178 @@ Rcpp::List BelowCanopyProfile(
         Rcpp::Named("profiled") = true
     );
 }
+// Run above canopy model for all time steps and heights (the forest profile);
+// [[Rcpp::export]]
+Rcpp::List AboveCanopyProfile(
+    const std::vector<double>& zregs,  // Pass by const reference
+    double zref,
+    double lat,
+    double lon,
+    Rcpp::DataFrame obstime,
+    Rcpp::DataFrame climdata,
+    Rcpp::DataFrame bigleafvars,
+    const std::vector<double>& vegp)  // Pass by const reference
+{
+    // Cache DataFrame columns with const references to avoid repeated lookups
+    const std::vector<int>& year = obstime["year"];
+    const std::vector<int>& month = obstime["month"];
+    const std::vector<int>& day = obstime["day"];
+    const std::vector<double>& hour = obstime["hour"];
+
+    const std::vector<double>& tc = climdata["temp"];
+    const std::vector<double>& rh = climdata["relhum"];
+    const std::vector<double>& Rsw = climdata["swdown"];
+    const std::vector<double>& Rdif = climdata["difrad"];
+    const std::vector<double>& Rlw = climdata["lwdown"];
+
+    const std::vector<double>& Tc = bigleafvars["Tc"];
+    const std::vector<double>& psih = bigleafvars["psih"];
+    const std::vector<double>& psim = bigleafvars["psim"];
+    const std::vector<double>& uf = bigleafvars["uf"];
+    const std::vector<double>& albedo = bigleafvars["albedo"];
+    const std::vector<double>& surfwet = bigleafvars["surfwet"];
+
+    const size_t nt = tc.size();
+    const size_t nz = zregs.size();
+
+    // Pre-calculate vegetation parameters (moved outside loops)
+    double hgt = vegp[0];
+    const double pai = vegp[1];
+    const double vegem = vegp[7];
+    if (hgt < 0.001) hgt = 0.001;
+    const double d = zeroplanedisCpp(hgt, pai);
+
+    // Pre-calculate constants
+    const double pi_over_180 = M_PI / 180.0;
+    const double stefan_boltzmann = 5.67e-8;
+    const double kelvin_offset = 273.15;
+    const double karman_constant = 0.4;
+    const double rh_to_decimal = 0.01;  // 1/100
+
+    // Pre-calculate height-dependent values that don't change with time
+    std::vector<double> adjusted_heights(nz);
+    std::vector<double> lnrm_values(nz);
+    std::vector<double> lnrh_values(nz);
+
+    // Pre-calculate zref-dependent terms
+    const double zref_minus_d = zref - d;
+    const double log_zref_minus_d_over_zm_base = log(zref_minus_d);  // Will subtract log(zm) later
+    const double log_zref_minus_d_over_zh_base = log(zref_minus_d);  // Will subtract log(zh) later
+
+    // Use flat memory layout for better cache performance
+    std::vector<double> tair_prof_flat(nt * nz);
+    std::vector<double> ez_prof_flat(nt * nz);
+    std::vector<double> uz_prof_flat(nt * nz);
+    std::vector<double> relhum_prof_flat(nt * nz);
+
+    // Pre-allocate output vectors
+    std::vector<double> Rswup(nt);
+    std::vector<double> Rlwup(nt);
+    std::vector<double> Rdir(nt);
+
+    // Main computation loop
+    for (size_t hr = 0; hr < nt; ++hr) {
+        const size_t base_idx = hr * nz;
+
+        // Common solar computations (cached for this time step)
+        const std::vector<double> solp = solpositionCpp(lat, lon, year[hr], month[hr], day[hr], hour[hr]);
+        const double zen = solp[0];
+        const double cos_zen = cos(zen * pi_over_180);
+
+        // Pre-calculate time-dependent values
+        Rdir[hr] = (Rsw[hr] - Rdif[hr]) / cos_zen;
+        Rswup[hr] = (1 - albedo[hr]) * Rsw[hr];
+        const double tc_plus_kelvin_pow4 = pow(Tc[hr] + kelvin_offset, 4);
+        Rlwup[hr] = vegem * stefan_boltzmann * tc_plus_kelvin_pow4;
+
+        // Pre-calculate roughness lengths for this time step
+        const double zm = roughlengthCpp(hgt, pai, d, psih[hr]);
+        const double zh = 0.2 * zm;
+        const double log_zm = log(zm);
+        const double log_zh = log(zh);
+
+        // Pre-calculate atmospheric variables for this time step
+        const double ea = satvapCpp(tc[hr]) * rh[hr] * rh_to_decimal;
+        const double estl = satvapCpp(Tc[hr]);
+        const double temp_diff = Tc[hr] - tc[hr];
+        const double vapor_diff = (estl - ea) * surfwet[hr];
+        const double uf_over_karman = uf[hr] / karman_constant;
+        const double psim_hr = psim[hr];
+
+        // Pre-calculate height-independent logarithmic terms
+        const double log_zref_minus_d_over_zm = log_zref_minus_d_over_zm_base - log_zm;
+        const double log_zref_minus_d_over_zh = log_zref_minus_d_over_zh_base - log_zh;
+
+        // Vectorized height loop
+        for (size_t i = 0; i < nz; ++i) {
+            const size_t idx = base_idx + i;
+
+            // Adjust height if needed
+            double reqhgt = zregs[i];
+            if (reqhgt <= d) reqhgt = d + 0.01;
+
+            const double reqhgt_minus_d = reqhgt - d;
+
+            // Calculate logarithmic ratios more efficiently
+            const double log_reqhgt_minus_d_over_zm = log(reqhgt_minus_d) - log_zm;
+            const double log_reqhgt_minus_d_over_zh = log(reqhgt_minus_d) - log_zh;
+
+            const double lnrm = log_reqhgt_minus_d_over_zm / log_zref_minus_d_over_zm;
+            const double lnrh = log_reqhgt_minus_d_over_zh / log_zref_minus_d_over_zh;
+
+            const double psimz = lnrm * psim_hr;
+            const double one_minus_lnrh = 1.0 - lnrh;
+
+            // Wind speed
+            uz_prof_flat[idx] = uf_over_karman * (log_reqhgt_minus_d_over_zm + psimz);
+
+            // Temperature profile
+            tair_prof_flat[idx] = tc[hr] + temp_diff * one_minus_lnrh;
+
+            // Vapor pressure
+            ez_prof_flat[idx] = ea + vapor_diff * one_minus_lnrh;
+
+            // Relative humidity (with efficient saturation vapor pressure calculation)
+            const double satvap_air = satvapCpp(tair_prof_flat[idx]);
+            double rel_hum = (ez_prof_flat[idx] / satvap_air) * 100.0;
+            relhum_prof_flat[idx] = std::min(100.0, rel_hum);
+        }
+    }
+
+    // Convert flat arrays back to 2D structure for R
+    Rcpp::List tair_prof(nt), ez_prof(nt), uz_prof(nt), relhum_prof(nt);
+
+    for (size_t hr = 0; hr < nt; ++hr) {
+        const size_t base_idx = hr * nz;
+
+        tair_prof[hr] = std::vector<double>(
+            tair_prof_flat.begin() + base_idx,
+            tair_prof_flat.begin() + base_idx + nz
+        );
+        ez_prof[hr] = std::vector<double>(
+            ez_prof_flat.begin() + base_idx,
+            ez_prof_flat.begin() + base_idx + nz
+        );
+        uz_prof[hr] = std::vector<double>(
+            uz_prof_flat.begin() + base_idx,
+            uz_prof_flat.begin() + base_idx + nz
+        );
+        relhum_prof[hr] = std::vector<double>(
+            relhum_prof_flat.begin() + base_idx,
+            relhum_prof_flat.begin() + base_idx + nz
+        );
+    }
+
+    // Use List construction
+    return Rcpp::List::create(
+        Rcpp::Named("tair") = tair_prof,
+        Rcpp::Named("tcanopy") = Tc,
+        Rcpp::Named("relhum") = relhum_prof,
+        Rcpp::Named("windspeed") = uz_prof,
+        Rcpp::Named("Rdirdown") = Rdir,
+        Rcpp::Named("Rdifdown") = Rdif,
+        Rcpp::Named("Rlwdown") = Rlw,
+        Rcpp::Named("Rswup") = Rswup,
+        Rcpp::Named("Rlwup") = Rlwup
+    );
+}
