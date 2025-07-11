@@ -2481,6 +2481,7 @@ Rcpp::List AboveCanopyProfile(
 // Run model for multiple heights using optimized Profile functions
 // [[Rcpp::export]]
 Rcpp::List runmodelProfile(
+    const std::vector<double>& heights,
     double zref,
     double lat,
     double lon,
@@ -2495,13 +2496,9 @@ Rcpp::List runmodelProfile(
     double a1 = 1.25,
     double bwgt = 0.5)
 {
-    // Generate height array
-    std::vector<double> heights;
-    for(int i = 0; i < paii.size() + 1; ++i) {
-        heights.push_back(0.5 + i); // lowest height in forest is 0.5 m
-    }
 
     Rprintf("Running model for multiple heights...\n");
+    Rprintf("Number of heights: %zu\n", heights.size());
 
     const double hgt = vegp[0];  // Canopy height
     const size_t n_heights = heights.size();

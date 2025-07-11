@@ -259,25 +259,10 @@ runpointmodel<-function(climdata,  reqhgt, vegp, paii = NA, groundp, lat, long, 
   # Run point model
   vegpp[11]<-vegp$lref/2
   vegpp[12]<-vegp$ltra/2
-  if (class(reqhgt) == "logical") { # List of heights for which to run model
-    print("runmodelProfile 2")
-    print(length(zref))
-    print(length(lat))
-    print(length(long))
-    print("obstime --------------------------------------")
-    print(length(obstime))
-    print("climdata --------------------------------------")
-    print(length(climdata))
-    print("bigleafvars --------------------------------------")
-    print(length(bigleafvars))
-    print(length(maxiter))
-    print("vegpp --------------------------------------")
-    print(length(vegpp))
-    print(length(paii))
-    print(length(groundpp))
-    modp<-runmodelProfile(zref,lat,long,obstime,climdata,bigleafvars,maxiter,vegpp,paii,groundpp)
+  if (length(reqhgt) > 1) { # List of heights for which to run model
+    modp<-runmodelProfile(reqhgt, zref,lat,long,obstime,climdata,bigleafvars,maxiter,vegpp,paii,groundpp)
   } else {
-    modp<-runmodel(reqhgt,zref,lat,long,obstime,climdata,bigleafvars,maxiter,vegpp,paii,groundpp)
+    modp<-runmodel(reqhgt, zref,lat,long,obstime,climdata,bigleafvars,maxiter,vegpp,paii,groundpp)
     obs_time<-tme
     modp<-cbind(obs_time,modp)
   }
