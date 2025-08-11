@@ -260,6 +260,7 @@ runpointmodel<-function(climdata,  reqhgt, vegp, paii = NA, groundp, lat, long, 
   vegpp[11]<-vegp$lref/2
   vegpp[12]<-vegp$ltra/2
   if (length(reqhgt) > 1) { # List of heights for which to run model
+    print("new")
     modp<-runmodelProfile(reqhgt, zref,lat,long,obstime,climdata,bigleafvars,maxiter,vegpp,paii,groundpp)
   } else {
     modp<-runmodel(reqhgt, zref,lat,long,obstime,climdata,bigleafvars,maxiter,vegpp,paii,groundpp)

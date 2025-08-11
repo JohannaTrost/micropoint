@@ -426,11 +426,12 @@ BEGIN_RCPP
 END_RCPP
 }
 // BelowCanopyProfile
-Rcpp::List BelowCanopyProfile(double zref, double lat, double lon, DataFrame obstime, DataFrame climdata, DataFrame bigleafvars, int iters, const std::vector<double>& vegp, const std::vector<double>& paii, const std::vector<double>& groundp, double a0, double a1, double bwgt);
-RcppExport SEXP _micropoint_BelowCanopyProfile(SEXP zrefSEXP, SEXP latSEXP, SEXP lonSEXP, SEXP obstimeSEXP, SEXP climdataSEXP, SEXP bigleafvarsSEXP, SEXP itersSEXP, SEXP vegpSEXP, SEXP paiiSEXP, SEXP groundpSEXP, SEXP a0SEXP, SEXP a1SEXP, SEXP bwgtSEXP) {
+Rcpp::List BelowCanopyProfile(const std::vector<double>& z, double zref, double lat, double lon, DataFrame obstime, DataFrame climdata, DataFrame bigleafvars, int iters, const std::vector<double>& vegp, const std::vector<double>& paii, const std::vector<double>& groundp, double a0, double a1, double bwgt);
+RcppExport SEXP _micropoint_BelowCanopyProfile(SEXP zSEXP, SEXP zrefSEXP, SEXP latSEXP, SEXP lonSEXP, SEXP obstimeSEXP, SEXP climdataSEXP, SEXP bigleafvarsSEXP, SEXP itersSEXP, SEXP vegpSEXP, SEXP paiiSEXP, SEXP groundpSEXP, SEXP a0SEXP, SEXP a1SEXP, SEXP bwgtSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const std::vector<double>& >::type z(zSEXP);
     Rcpp::traits::input_parameter< double >::type zref(zrefSEXP);
     Rcpp::traits::input_parameter< double >::type lat(latSEXP);
     Rcpp::traits::input_parameter< double >::type lon(lonSEXP);
@@ -444,7 +445,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type a0(a0SEXP);
     Rcpp::traits::input_parameter< double >::type a1(a1SEXP);
     Rcpp::traits::input_parameter< double >::type bwgt(bwgtSEXP);
-    rcpp_result_gen = Rcpp::wrap(BelowCanopyProfile(zref, lat, lon, obstime, climdata, bigleafvars, iters, vegp, paii, groundp, a0, a1, bwgt));
+    rcpp_result_gen = Rcpp::wrap(BelowCanopyProfile(z, zref, lat, lon, obstime, climdata, bigleafvars, iters, vegp, paii, groundp, a0, a1, bwgt));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -543,7 +544,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_micropoint_Belowground", (DL_FUNC) &_micropoint_Belowground, 3},
     {"_micropoint_Atground", (DL_FUNC) &_micropoint_Atground, 7},
     {"_micropoint_runmodel", (DL_FUNC) &_micropoint_runmodel, 14},
-    {"_micropoint_BelowCanopyProfile", (DL_FUNC) &_micropoint_BelowCanopyProfile, 13},
+    {"_micropoint_BelowCanopyProfile", (DL_FUNC) &_micropoint_BelowCanopyProfile, 14},
     {"_micropoint_AboveCanopyProfile", (DL_FUNC) &_micropoint_AboveCanopyProfile, 8},
     {"_micropoint_runmodelProfile", (DL_FUNC) &_micropoint_runmodelProfile, 14},
     {NULL, NULL, 0}
